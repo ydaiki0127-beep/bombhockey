@@ -1,7 +1,7 @@
 # ボムホッケー iPhone 導入ガイド
 
 > 作成日: 2026-08-08
-> 状態: ✅ エクスポート成功 + CIワークフロー（`.github/workflows/ios.yml`）作成済み
+> 状態: ✅ **署名なし.ipaのビルドに成功**（GitHub Actions）
 
 ---
 
@@ -11,9 +11,8 @@
 |---|---|
 | iOSエクスポートプリセット作成 | ✅ 完了 |
 | App Store Team ID エラー回避 | ✅ 完了 |
-| Xcodeプロジェクト生成 (`build/ios/bombhockey.xcodeproj`) | ✅ 完了 |
-| CIワークフロー作成（署名なし.ipa自動ビルド） | ✅ 完了（`.github/workflows/ios.yml`） |
-| GitHubへプッシュ + ワークフロー実行 | ⏳ あなたの作業 |
+| CIワークフローで署名なし.ipaビルド | ✅ **成功**（`build/ipa/bombhockey-unsigned.ipa` 29MB） |
+| リポジトリ | ✅ `https://github.com/ydaiki0127-beep/bombhockey` |
 | SideloadlyでiPhoneへインストール | ⏳ あなたの作業（7日ごとの再署名） |
 
 ---
@@ -142,20 +141,20 @@ git remote add origin https://github.com/<あなたのユーザー名>/bombhocke
 git push -u origin main
 ```
 
-### 手順2: ワークフローを実行
+### 手順2: ワークフローを実行（ゲームを更新するとき）
 
-1. GitHubの **Actions** タブを開く
-2. 左側の「**iOS ビルド（署名なし .ipa）**」を選ぶ
-3. **Run workflow** ボタンを押す（初回は約15〜30分かかります）
-4. 完了後、ジョブの**Artifacts**欄から `bombhockey-unsigned-ipa` をダウンロード
-5. 解凍して `bombhockey-unsigned.ipa` を取り出す
+1. GitHubの **Actions** タブ → 左側の「**iOS ビルド（署名なし .ipa）**」→ **Run workflow**
+2. 完了後、ジョブの**Artifacts**欄から `bombhockey-unsigned-ipa` をダウンロード
 
-### 手順3: Sideloadly で iPhone にインストール
+> 初回のビルドは**完了済み**で、`.ipa` は既に `build/ipa/bombhockey-unsigned.ipa` にあります。
+> ゲームを変更したときだけ手順2を再実行してください。
+
+### 手順3: Sideloadly で iPhone にインストール（あなたが行う最後の作業）
 
 1. **Sideloadly**（無料・Windows対応）を https://sideloadly.io からダウンロードしてインストール
 2. iPhone をUSBでPCに接続（初回は「このコンピュータを信頼しますか？」に「信頼」）
 3. Sideloadly を起動し:
-   - **IPA** 欄に `bombhockey-unsigned.ipa` をドラッグ＆ドロップ
+   - **IPA** 欄に `C:\Users\ydaik\作成したゲーム\air-hockey\build\ipa\bombhockey-unsigned.ipa` をドラッグ＆ドロップ
    - **Apple ID** 欄に無料のApple IDとパスワードを入力（サイドロード専用のサブApple IDを推奨）
    - **Start** をクリック → 署名・インストールが自動で進む
 4. iPhoneの「設定」→「一般」→「VPNとデバイス管理」→ 開発者プロフィールを**信頼**
@@ -171,7 +170,8 @@ git push -u origin main
 
 | 症状 | 対処 |
 |---|---|
-| ワークフローが「Export」ステップで失敗 | ローカル（Windows）で同じエクスポートコマンドを実行して切り分け。ローカルで成功するのにCIだけ失敗する場合は、Godotのバージョン不一致（4.8-dev2以外）やテンプレート未導入の可能性。それでも解決しない場合はログを共有してください |
+| ワークフローが「Export」ステップで失敗 | ローカル（Windows）で同じエクスポートコマンドを実行して切り分け。`build/` フォルダが無い場合は `mkdir -p build/ios` を先に実行（CIは自動で実行済み） |
+| `xcodebuild` で `MTLTensorDomain` / `CADynamicRange` が未定義 | 4.8-dev2テンプレートのmetal_cppが現行SDKに無いシンボルを参照する既知の不整合。CIでは `OTHER_LDFLAGS` に `-Wl,-U,_MTLTensorDomain -Wl,-U,_CADynamicRangeAutomatic -Wl,-U,_CADynamicRangeConstrainedHigh -Wl,-U,_CADynamicRangeHigh -Wl,-U,_CADynamicRangeStandard` を指定して回避（ゲームでは未使用のAPI） |
 | `xcodebuild` ステップで署名エラー | ワークフローは `CODE_SIGNING_ALLOWED=NO` 済み。エラーログがあれば、画面をキャプチャして共有してください |
 | iPhoneに「開発者を信頼できません」 | 設定→一般→VPNとデバイス管理で開発者証明書を信頼 |
 | アプリが7日後に起動しない | Sideloadlyで再署名（手順3） |
