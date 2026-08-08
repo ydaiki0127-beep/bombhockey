@@ -52,14 +52,14 @@ jobs:
       - name: 署名なし .app をビルド（xcodebuild）
         run: |
           cd build/ios
-          # デプロイメントターゲット17.0: Xcode 16.4のSwift 6.2ランタイムはiOS 15.0では
-          # SwiftUICore等をリンクできないため引き上げる（iPhoneは17.0.1以降でOK）
+          # デプロイメントターゲット18.0: 4.8-dev2テンプレートのmetal_cppが参照する
+          # CADynamicRange / MTLTensorDomain はiOS 18導入のため、17.0ではリンクできない
           xcodebuild -project bombhockey.xcodeproj \
             -scheme bombhockey \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath derived \
-            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
