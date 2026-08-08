@@ -171,7 +171,7 @@ GitHub Actions の macOS ランナーを使う方法。**ワークフローフ�
 
 | 症状 | 対処 |
 |---|---|
-| iPhoneがPCに認識されない | Apple Devices/iTunesのインストールを確認。ケーブルを別のポートに挿し直す |
+| iPhoneがPCに認識されない | **原因はほぼAppleドライバ（AMDS）未導入**。① Windowsのスタートメニューから「Apple Devices」アプリを一度起動してiPhoneを表示させる ② Sideloadlyを完全に終了して再起動 ③ それでもダメならケーブル・USBポートを変える |
 | 「開発者を信頼できません」と出る | ⑤の手順（設定→一般→VPNとデバイス管理→信頼）を実行 |
 | インストールが失敗する | PCとiPhoneを再起動。別のUSBポートを試す。Sideloadlyのログ画面を確認 |
 | Apple IDの認証が通らない | サイドロード専用の新しいApple IDを作ると成功率が上がる |
