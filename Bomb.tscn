@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Bomb.gd" id="1_bomb"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_bomb"]
+radius = 26.0
+
+[node name="Bomb" type="StaticBody2D"]
+script = ExtResource("1_bomb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 18)
+shape = SubResource("CircleShape2D_bomb")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+scale = Vector2(0.225, 0.225)
+offset = Vector2(0, 18)
+
+[node name="HitArea" type="Area2D" parent="."]
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitArea"]
+position = Vector2(0, 18)
+shape = SubResource("CircleShape2D_bomb")
+
+[node name="PlaceSE" type="AudioStreamPlayer2D" parent="."]
+volume_db = -8.0
+
+[node name="ExplosionSE" type="AudioStreamPlayer2D" parent="."]
+volume_db = -3.0

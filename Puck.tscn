@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Puck.gd" id="1_puck"]
+[ext_resource type="Texture2D" path="res://assets/puck.png" id="2_sprite"]
+[ext_resource type="AudioStream" path="res://assets/se_hit.wav" id="3_se"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_puck"]
+radius = 23.0
+
+[node name="Puck" type="RigidBody2D"]
+script = ExtResource("1_puck")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_puck")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_sprite")
+scale = Vector2(0.14, 0.14)
+
+[node name="HitSE" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_se")
+volume_db = -8.0

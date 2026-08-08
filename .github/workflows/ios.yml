@@ -1,0 +1,76 @@
+# ボムホッケー iOS ビルド（署名なし .ipa 生成）
+#
+# 使い方:
+#   1. このリポジトリをGitHubにプッシュする（publicにする必要あり）
+#   2. Actions タブ → 「iOS ビルド」→ Run workflow を実行
+#   3. 生成された bombhockey-unsigned.ipa をダウンロード
+#   4. WindowsのSideloadlyで無料Apple ID署名してiPhoneにインストール（7日間有効）
+#
+# 詳細は docs/iOS導入ガイド.md を参照
+
+name: iOS ビルド（署名なし .ipa）
+
+on:
+  workflow_dispatch:      # 手動実行
+  push:
+    branches: [main]
+
+jobs:
+  build-ios:
+    name: クラウドMacで .ipa を生成
+    runs-on: macos-15     # macOSランナー（Xcode同梱）
+
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: Godot 4.8-dev2 をダウンロード
+        run: |
+          curl -L -o godot.zip "https://github.com/godotengine/godot-builds/releases/download/4.8-dev2/Godot_v4.8-dev2_macos.universal.zip"
+          unzip -q godot.zip -d godot
+          test -f godot/Godot.app/Contents/MacOS/Godot && echo "Godot OK"
+
+      - name: iOS エクスポートテンプレートをインストール
+        run: |
+          curl -L -o templates.tpz "https://github.com/godotengine/godot-builds/releases/download/4.8-dev2/Godot_v4.8-dev2_export_templates.tpz"
+          mkdir -p "$HOME/Library/Application Support/Godot/export_templates/4.8.dev2"
+          unzip -q templates.tpz -d templates_extracted
+          # .tpz内の ios.zip を構造に依存せず明示的に探してコピーする
+          IOS_ZIP=$(find templates_extracted -name "ios.zip" | head -1)
+          test -n "$IOS_ZIP" || { echo "ios.zip not found in templates"; exit 1; }
+          cp "$IOS_ZIP" "$HOME/Library/Application Support/Godot/export_templates/4.8.dev2/ios.zip"
+          test -f "$HOME/Library/Application Support/Godot/export_templates/4.8.dev2/ios.zip" && echo "Templates OK"
+
+      - name: iOS 用 Xcode プロジェクトを生成（Godot エクスポート）
+        run: |
+          "$GITHUB_WORKSPACE/godot/Godot.app/Contents/MacOS/Godot" --headless \
+            --path "$GITHUB_WORKSPACE" \
+            --export-release "iOS"
+
+      - name: 署名なし .app をビルド（xcodebuild）
+        run: |
+          cd build/ios
+          xcodebuild -project bombhockey.xcodeproj \
+            -scheme bombhockey \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath derived \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: .ipa にパッケージング
+        run: |
+          cd build/ios
+          mkdir -p Payload
+          cp -R derived/Build/Products/Release-iphoneos/bombhockey.app Payload/
+          zip -qry bombhockey-unsigned.ipa Payload
+          ls -lh bombhockey-unsigned.ipa
+
+      - name: 成果物をアップロード
+        uses: actions/upload-artifact@v4
+        with:
+          name: bombhockey-unsigned-ipa
+          path: build/ios/bombhockey-unsigned.ipa
+          if-no-files-found: error
