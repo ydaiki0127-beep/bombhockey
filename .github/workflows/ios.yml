@@ -52,13 +52,15 @@ jobs:
       - name: 署名なし .app をビルド（xcodebuild）
         run: |
           cd build/ios
-          # デプロイメントターゲット18.0: 4.8-dev2テンプレートのmetal_cppが参照する
-          # CADynamicRange / MTLTensorDomain はiOS 18導入のため、17.0ではリンクできない
+          # 4.8-dev2テンプレートは LD_CLASSIC_16_4 未定義のため OTHER_LDFLAGS が空になり
+          # 新しいリンカ(ld_prime)が使われると Swift 自動リンクが壊れる。
+          # クラシックリンカ(-ld_classic)を明示指定して回避する。
           xcodebuild -project bombhockey.xcodeproj \
             -scheme bombhockey \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath derived \
+            OTHER_LDFLAGS=-ld_classic \
             IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
