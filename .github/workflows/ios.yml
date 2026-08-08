@@ -43,6 +43,8 @@ jobs:
 
       - name: iOS 用 Xcode プロジェクトを生成（Godot エクスポート）
         run: |
+          # build/ は .gitignore 対象のため新規チェックアウトには存在しない。先に作成する
+          mkdir -p "$GITHUB_WORKSPACE/build/ios"
           "$GITHUB_WORKSPACE/godot/Godot.app/Contents/MacOS/Godot" --headless \
             --path "$GITHUB_WORKSPACE" \
             --export-release "iOS"
